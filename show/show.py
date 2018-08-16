@@ -1,39 +1,38 @@
 #!/usr/bin/env python
+import io
+import time
+import base64
 
 import asyncio
 import websockets
-import cv2
-
-import base64
 
 from PIL import Image
-import cv2
-import io
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 # Take in base64 string and return cv image
 def stringToRGB(base64_string):
     imgdata = base64.b64decode(str(base64_string))
     image = Image.open(io.BytesIO(imgdata))
-    return cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB)
+    return np.array(image)
 
+import cv2
 
 async def ws_handler(websocket, path):
     while True:
-        ts_start = time.time()
         image_data = await websocket.recv()
+        # ts_start = time.time()
         image_data = image_data.replace("data:image/png;base64,", "")
         image = stringToRGB(image_data)
-        # image = base64.decodebytes(image_data)
+        # ts_end = time.time()
+        # print(ts_end - ts_start)
 
-        ts_end = time.time()
-        print(ts_end - ts_start)
+        # plt.imshow(image)
+        # plt.show()
 
         cv2.imshow("image", image)
         cv2.waitKey(1)
-        # image_data = await websocket.recv()
-        # print("got image data")
 
 
 
