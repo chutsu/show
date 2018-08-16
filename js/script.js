@@ -94,36 +94,36 @@ class Show {
     });
 
 
-		// Point cloud test
-		var point_geometry = new THREE.Geometry();
-		for ( var i = 0; i < 2000000; i ++ ) {
-			var point = new THREE.Vector3();
-			point.x = THREE.Math.randFloatSpread( 20000 );
-			point.y = THREE.Math.randFloatSpread( 20000 );
-			point.z = THREE.Math.randFloatSpread( 20000 );
-			point_geometry.vertices.push(point);
-		}
-		var point_material = new THREE.PointsMaterial({color: 0xffffff});
-		var point_cloud = new THREE.Points(point_geometry, point_material);
-		scene.add(point_cloud);
+    // Point cloud test
+    var point_geometry = new THREE.Geometry();
+    for ( var i = 0; i < 2000000; i ++ ) {
+      var point = new THREE.Vector3();
+      point.x = THREE.Math.randFloatSpread( 20000 );
+      point.y = THREE.Math.randFloatSpread( 20000 );
+      point.z = THREE.Math.randFloatSpread( 20000 );
+      point_geometry.vertices.push(point);
+    }
+    var point_material = new THREE.PointsMaterial({color: 0xffffff});
+    var point_cloud = new THREE.Points(point_geometry, point_material);
+    scene.add(point_cloud);
 
-		// DO NOT DO IT THIS WAY ELSE THE RENDER WILL BE 1-2 FPS
-		// var limit = 20000;
-		// for (var i = 0; i < limit; i++) {
-		// 	var point_geometry = new THREE.Geometry();
+    // DO NOT DO IT THIS WAY ELSE THE RENDER WILL BE 1-2 FPS
+    // var limit = 20000;
+    // for (var i = 0; i < limit; i++) {
+    //   var point_geometry = new THREE.Geometry();
     //
-		// 	var upper_bound = 400;
-		// 	var lower_bound = -400;
-		// 	var x = Math.floor(Math.random() * (upper_bound - lower_bound + 1)) + lower_bound;
-		// 	var y = Math.floor(Math.random() * (upper_bound - lower_bound + 1)) + lower_bound;
-		// 	var z = Math.floor(Math.random() * (upper_bound - lower_bound + 1)) + lower_bound;
+    //   var upper_bound = 400;
+    //   var lower_bound = -400;
+    //   var x = Math.floor(Math.random() * (upper_bound - lower_bound + 1)) + lower_bound;
+    //   var y = Math.floor(Math.random() * (upper_bound - lower_bound + 1)) + lower_bound;
+    //   var z = Math.floor(Math.random() * (upper_bound - lower_bound + 1)) + lower_bound;
     //
-		// 	point_geometry.vertices.push(new THREE.Vector3(x, y, z));
-		// 	var point_material = new THREE.PointsMaterial( { size: 1, sizeAttenuation: false } );
-		// 	var point = new THREE.Points( point_geometry, point_material );
+    //   point_geometry.vertices.push(new THREE.Vector3(x, y, z));
+    //   var point_material = new THREE.PointsMaterial( { size: 1, sizeAttenuation: false } );
+    //   var point = new THREE.Points( point_geometry, point_material );
     //
-		// 	scene.add(point);
-		// }
+    //   scene.add(point);
+    // }
 
     // Events
     window.addEventListener('resize', function() {that.onWindowResize();}, false);
