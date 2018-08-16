@@ -1,6 +1,6 @@
 # show
 
-A small browser based visualizer for SLAM.
+A small WebGL based visualizer for SLAM.
 
 
 ## LICENCE
