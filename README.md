@@ -3,6 +3,17 @@
 A small WebGL based visualizer for SLAM.
 
 
+# Usage
+
+In the terminal start a webserver to serve the index.html file. You can
+use any webserver of your choice but the easiest is the following python
+3 one liner.
+
+    python3 -m http.server 8000
+
+Now that the webserver is up, open a broser tab at `127.0.0.1:8000`.
+
+
 ## LICENCE
 
 The MIT License (MIT)
