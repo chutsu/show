@@ -52,26 +52,78 @@ class Show {
 
     // Scene
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xffffff);
+    // this.scene.background = new THREE.Color(0xcccccc);
+    this.scene.background = new THREE.Color(0x000000);
     // this.scene.add(this.mesh);
     this.scene.add(axes);
     this.scene.add(gridXZ);
 
+    // // Ambient light
+    // var ambient_light = new THREE.AmbientLight(0xcccccc, 1);
+    // scene.add(ambient_light);
+
+    // Directional light
+    // var directional_light = new THREE.DirectionalLight(0xffffff, 0.8);
+    // directional_light.up.set(0, 0, 1);
+    // directional_light.position.set(0, 1, 1).normalize();
+    // scene.add(directional_light);
+
     // Loading manager
-    var model;
+    var quad_model;
+    var building_model;
     var scene = this.scene;
     var loading_manager = new THREE.LoadingManager(function() {
-      scene.add(model);
+      scene.add(quad_model);
+      scene.add(building_model);
     });
 
     // Collada model loader
-    var loader = new THREE.ColladaLoader(loading_manager);
-    loader.load('./models/quadrotor/quadrotor.dae', function(collada) {
-      model = collada.scene;
-      model.scale.set(50, 50, 50);
-      model.position.set(0, 0, 10);
-      model.rotation.set(0, 0, 0);
+    var collada_loader = new THREE.ColladaLoader(loading_manager);
+    collada_loader.load('./models/quadrotor/quadrotor.dae', function(collada) {
+      quad_model = collada.scene;
+      quad_model.scale.set(50, 50, 50);
+      quad_model.position.set(0, 0, 10);
+      quad_model.rotation.set(0, 0, 0);
     });
+
+    collada_loader.load('./models/small_building/small_building.dae', function(collada) {
+      building_model = collada.scene;
+      building_model.scale.set(50, 50, 50);
+      building_model.position.set(200, 0, 0);
+      building_model.rotation.set(0, 0, 0);
+    });
+
+
+		// Point cloud test
+		var point_geometry = new THREE.Geometry();
+		for ( var i = 0; i < 2000000; i ++ ) {
+			var point = new THREE.Vector3();
+			point.x = THREE.Math.randFloatSpread( 20000 );
+			point.y = THREE.Math.randFloatSpread( 20000 );
+			point.z = THREE.Math.randFloatSpread( 20000 );
+			point_geometry.vertices.push(point);
+		}
+		var point_material = new THREE.PointsMaterial({color: 0xffffff});
+		var point_cloud = new THREE.Points(point_geometry, point_material);
+		scene.add(point_cloud);
+
+		// DO NOT DO IT THIS WAY ELSE THE RENDER WILL BE 1-2 FPS
+		// var limit = 20000;
+		// for (var i = 0; i < limit; i++) {
+		// 	var point_geometry = new THREE.Geometry();
+    //
+		// 	var upper_bound = 400;
+		// 	var lower_bound = -400;
+		// 	var x = Math.floor(Math.random() * (upper_bound - lower_bound + 1)) + lower_bound;
+		// 	var y = Math.floor(Math.random() * (upper_bound - lower_bound + 1)) + lower_bound;
+		// 	var z = Math.floor(Math.random() * (upper_bound - lower_bound + 1)) + lower_bound;
+    //
+		// 	point_geometry.vertices.push(new THREE.Vector3(x, y, z));
+		// 	var point_material = new THREE.PointsMaterial( { size: 1, sizeAttenuation: false } );
+		// 	var point = new THREE.Points( point_geometry, point_material );
+    //
+		// 	scene.add(point);
+		// }
 
     // Events
     window.addEventListener('resize', function() {that.onWindowResize();}, false);
