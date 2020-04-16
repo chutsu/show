@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+set -e
 
-export PYTHONPATH=/usr/local/lib/python3.5/dist-packages
-python3 show/show.py
+cd show
+make
