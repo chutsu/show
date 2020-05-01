@@ -141,7 +141,7 @@ glprog_t::glprog_t(const char *vs_src, const char *fs_src) {
 
 void glprog_t::use() const { glUseProgram(program_id); }
 
-int glprog_t::setBool(const std::string &key, const bool value) const {
+int glprog_t::set(const std::string &key, const bool value) const {
   const auto location = glGetUniformLocation(program_id, key.c_str());
   if (location == -1) {
     return -1;
@@ -151,7 +151,7 @@ int glprog_t::setBool(const std::string &key, const bool value) const {
   return 0;
 }
 
-int glprog_t::setInt(const std::string &key, const int value) const {
+int glprog_t::set(const std::string &key, const int value) const {
   const auto location = glGetUniformLocation(program_id, key.c_str());
   if (location == -1) {
     return -1;
@@ -161,7 +161,7 @@ int glprog_t::setInt(const std::string &key, const int value) const {
   return 0;
 }
 
-int glprog_t::setFloat(const std::string &key, const float value) const {
+int glprog_t::set(const std::string &key, const float value) const {
   const auto location = glGetUniformLocation(program_id, key.c_str());
   if (location == -1) {
     return -1;
@@ -171,7 +171,7 @@ int glprog_t::setFloat(const std::string &key, const float value) const {
   return 0;
 }
 
-int glprog_t::setVec2(const std::string &key, const glm::vec2 &value) const {
+int glprog_t::set(const std::string &key, const glm::vec2 &value) const {
   const auto location = glGetUniformLocation(program_id, key.c_str());
   if (location == -1) {
     return -1;
@@ -181,9 +181,9 @@ int glprog_t::setVec2(const std::string &key, const glm::vec2 &value) const {
   return 0;
 }
 
-int glprog_t::setVec2(const std::string &key,
-                      const float x,
-                      const float y) const {
+int glprog_t::set(const std::string &key,
+                  const float x,
+                  const float y) const {
   const auto location = glGetUniformLocation(program_id, key.c_str());
   if (location == -1) {
     return -1;
@@ -193,7 +193,7 @@ int glprog_t::setVec2(const std::string &key,
   return 0;
 }
 
-int glprog_t::setVec3(const std::string &key, const glm::vec3 &value) const {
+int glprog_t::set(const std::string &key, const glm::vec3 &value) const {
   const auto location = glGetUniformLocation(program_id, key.c_str());
   if (location == -1) {
     return -1;
@@ -203,10 +203,10 @@ int glprog_t::setVec3(const std::string &key, const glm::vec3 &value) const {
   return 0;
 }
 
-int glprog_t::setVec3(const std::string &key,
-                      const float x,
-                      const float y,
-                      const float z) const {
+int glprog_t::set(const std::string &key,
+                  const float x,
+                  const float y,
+                  const float z) const {
   const auto location = glGetUniformLocation(program_id, key.c_str());
   if (location == -1) {
     return -1;
@@ -216,7 +216,7 @@ int glprog_t::setVec3(const std::string &key,
   return 0;
 }
 
-int glprog_t::setVec4(const std::string &key, const glm::vec4 &value) const {
+int glprog_t::set(const std::string &key, const glm::vec4 &value) const {
   const auto location = glGetUniformLocation(program_id, key.c_str());
   if (location == -1) {
     return -1;
@@ -226,11 +226,11 @@ int glprog_t::setVec4(const std::string &key, const glm::vec4 &value) const {
   return 0;
 }
 
-int glprog_t::setVec4(const std::string &key,
-                      const float x,
-                      const float y,
-                      const float z,
-                      const float w) const {
+int glprog_t::set(const std::string &key,
+                  const float x,
+                  const float y,
+                  const float z,
+                  const float w) const {
   const auto location = glGetUniformLocation(program_id, key.c_str());
   if (location == -1) {
     return -1;
@@ -240,7 +240,7 @@ int glprog_t::setVec4(const std::string &key,
   return 0;
 }
 
-int glprog_t::setMat2(const std::string &key, const glm::mat2 &mat) const {
+int glprog_t::set(const std::string &key, const glm::mat2 &mat) const {
   const auto location = glGetUniformLocation(program_id, key.c_str());
   if (location == -1) {
     return -1;
@@ -250,7 +250,7 @@ int glprog_t::setMat2(const std::string &key, const glm::mat2 &mat) const {
   return 0;
 }
 
-int glprog_t::setMat3(const std::string &key, const glm::mat3 &mat) const {
+int glprog_t::set(const std::string &key, const glm::mat3 &mat) const {
   const auto location = glGetUniformLocation(program_id, key.c_str());
   if (location == -1) {
     return -1;
@@ -260,7 +260,7 @@ int glprog_t::setMat3(const std::string &key, const glm::mat3 &mat) const {
   return 0;
 }
 
-int glprog_t::setMat4(const std::string &key, const glm::mat4 &mat) const {
+int glprog_t::set(const std::string &key, const glm::mat4 &mat) const {
   const auto location = glGetUniformLocation(program_id, key.c_str());
   if (location == -1) {
     return -1;
@@ -433,7 +433,7 @@ void glmesh_draw(const glmesh_t &mesh, const glprog_t &program) {
   unsigned int normal_counter = 1;
   unsigned int height_counter = 1;
 
-  for (unsigned int i = 0; i < mesh.textures.size(); i++) {
+  for (size_t i = 0; i < mesh.textures.size(); i++) {
     // Acitivate proper texture unit before binding
     glActiveTexture(GL_TEXTURE0 + i);
 
@@ -454,7 +454,7 @@ void glmesh_draw(const glmesh_t &mesh, const glprog_t &program) {
     }
 
     // Set the sampler to the correct texture unit and bind texture
-    program.setInt((name + number), i);
+    program.set((name + number), (int) i);
     // glUniform1i(glGetUniformLocation(program.program_id, (name +
     // number).c_str()), i);
     glBindTexture(GL_TEXTURE_2D, mesh.textures[i].id);
@@ -591,9 +591,9 @@ glmodel_t::glmodel_t(const std::string &path,
 void glmodel_draw(glmodel_t &model, const glcamera_t &camera) {
   // Set projection and view
   model.program.use();
-  model.program.setMat4("projection", glcamera_projection(camera));
-  model.program.setMat4("view", glcamera_view_matrix(camera));
-  model.program.setMat4("model", model.T_SM);
+  model.program.set("projection", glcamera_projection(camera));
+  model.program.set("view", glcamera_view_matrix(camera));
+  model.program.set("model", model.T_SM);
 
   for (unsigned int i = 0; i < model.meshes.size(); i++) {
     glmesh_draw(model.meshes[i], model.program);
@@ -927,9 +927,9 @@ glcf_t::~glcf_t() {
 
 void glcf_t::draw(const glcamera_t &camera) {
   program_.use();
-  program_.setMat4("projection", glcamera_projection(camera));
-  program_.setMat4("view", glcamera_view_matrix(camera));
-  program_.setMat4("model", T_SM_);
+  program_.set("projection", glcamera_projection(camera));
+  program_.set("view", glcamera_view_matrix(camera));
+  program_.set("model", T_SM_);
 
   // Store original line width
   float original_line_width = 0.0f;
@@ -1046,9 +1046,9 @@ glcube_t::~glcube_t() {
 
 void glcube_t::draw(const glcamera_t &camera) {
   program_.use();
-  program_.setMat4("projection", glcamera_projection(camera));
-  program_.setMat4("view", glcamera_view_matrix(camera));
-  program_.setMat4("model", T_SM_);
+  program_.set("projection", glcamera_projection(camera));
+  program_.set("view", glcamera_view_matrix(camera));
+  program_.set("model", T_SM_);
 
   // 12 x 3 indices starting at 0 -> 12 triangles -> 6 squares
   glBindVertexArray(VAO_);
@@ -1158,9 +1158,9 @@ glvoxels_t::~glvoxels_t() {}
 
 void glvoxels_t::draw(const glcamera_t &camera) {
   program_.use();
-  program_.setMat4("projection", glcamera_projection(camera));
-  program_.setMat4("view", glcamera_view_matrix(camera));
-  program_.setMat4("model", T_SM_);
+  program_.set("projection", glcamera_projection(camera));
+  program_.set("view", glcamera_view_matrix(camera));
+  program_.set("model", T_SM_);
 
   // 12 x 3 indices starting at 0 -> 12 triangles -> 6 squares
   glBindVertexArray(VAO_);
@@ -1217,9 +1217,9 @@ glframe_t::~glframe_t() {
 
 void glframe_t::draw(const glcamera_t &camera) {
   program_.use();
-  program_.setMat4("projection", glcamera_projection(camera));
-  program_.setMat4("view", glcamera_view_matrix(camera));
-  program_.setMat4("model", T_SM_);
+  program_.set("projection", glcamera_projection(camera));
+  program_.set("view", glcamera_view_matrix(camera));
+  program_.set("model", T_SM_);
 
   // Store original line width
   float original_line_width = 0.0f;
@@ -1322,9 +1322,9 @@ glgrid_t::~glgrid_t() {
 
 void glgrid_t::draw(const glcamera_t &camera) {
   program_.use();
-  program_.setMat4("projection", glcamera_projection(camera));
-  program_.setMat4("view", glcamera_view_matrix(camera));
-  program_.setMat4("model", T_SM_);
+  program_.set("projection", glcamera_projection(camera));
+  program_.set("view", glcamera_view_matrix(camera));
+  program_.set("model", T_SM_);
 
   const int nb_lines = (grid_size_ + 1) * 2;
   const int nb_vertices = nb_lines * 2;
@@ -1438,9 +1438,9 @@ void glplane_t::draw(const glcamera_t &camera) {
   // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   program_.use();
-  // program.setMat4("projection", glcamera_projection(camera));
-  // program.setMat4("view", glcamera_view_matrix(camera));
-  // program.setMat4("model", T_SM);
+  // program.set("projection", glcamera_projection(camera));
+  // program.set("view", glcamera_view_matrix(camera));
+  // program.set("model", T_SM);
 
   glActiveTexture(GL_TEXTURE0);
   glBindVertexArray(VAO_);
