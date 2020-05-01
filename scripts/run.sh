@@ -3,3 +3,4 @@ set -e
 
 cd show
 make
+./show

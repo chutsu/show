@@ -1,20 +1,12 @@
+include config.mk
+
 default: show
 
-show: show.cpp show.hpp
-	@g++ -c show.cpp\
-		-I../deps/ \
-		-L../deps/glfw/build -lglfw \
-		-I../deps/stb \
-		-L../deps/assimp/build -lassimp \
-		-L../deps/glad/ -lglad -ldl \
-		-I../deps/imgui -I../deps/imgui/examples/example_glfw_opengl3 \
-		-L../deps/imgui/ -limgui
-	@g++ show.o \
-		-I../deps/ \
-		-L../deps/glfw/build -lglfw \
-		-I../deps/stb \
-		-L../deps/assimp/build -lassimp \
-		-L../deps/glad/ -lglad -ldl \
-		-I../deps/imgui -I../deps/imgui/examples/example_glfw_opengl3 \
-		-L../deps/imgui/ -limgui \
-		-o show
+clean:
+	@rm -f show
+
+show.o: show.cpp show.hpp
+	@$(CXX) $(CFLAGS) -c show.cpp
+
+show: show.o
+	@$(CXX) $(CFLAGS) show.o -o show $(LIBS)
