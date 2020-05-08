@@ -2,6 +2,9 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <imgui/imgui.h>
+#include <imgui/examples/imgui_impl_glfw.h>
+#include <imgui/examples/imgui_impl_opengl3.h>
 
 // GLOBAL VARIABLES
 const unsigned int SCREEN_WIDTH = 800;
@@ -60,6 +63,14 @@ int main(void) {
     return -1;
   }
 
+  // Setup Dear ImGui context
+  const char *glsl_version = "#version 130";
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGui::StyleColorsDark();
+  ImGui_ImplGlfw_InitForOpenGL(window, true);
+  ImGui_ImplOpenGL3_Init(glsl_version);
+
   // Loop until the user closes the window
   while (!glfwWindowShouldClose(window)) {
     // Calculate dt
@@ -70,9 +81,24 @@ int main(void) {
     // Process user input
     process_input(window);
 
-    // Clear screen
+    // Poll
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    // Clear
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Show popup
+    ImGui::Begin("Demo Window");
+    ImGui::Button("Hello World!");
+    ImGui::End();
+    ImGui::Render();
+
+    // Render
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // Swap buffers and poll IO events (keyboard, mouse, etc)
     glfwSwapBuffers(window);
@@ -80,6 +106,9 @@ int main(void) {
   }
 
   // Clean up
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
   glfwTerminate();
   return 0;
 }

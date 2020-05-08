@@ -142,7 +142,7 @@ int main() {
 
   // Set up vertex data (and buffer(s)) and configure vertex attributes
   const float vertices[] = {
-      // Positions         // Colors           // Texture coords
+      // Positions        // Colors         // Texture coords
       0.5f,  0.5f,  0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // Top right
       0.5f,  -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, // Bottom right
       -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, // Bottom left

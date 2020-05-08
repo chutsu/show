@@ -23,7 +23,7 @@ clean:
 	@rm -rf $(BIN_DIR)
 
 # SHOW APP
-$(SHOW_APP): lib/show.cpp lib/show.hpp
+$(SHOW_APP): show/show.cpp show/show.hpp
 	@$(BUILD_BIN)
 
 # EXAMPLES
