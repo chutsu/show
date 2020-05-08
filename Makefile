@@ -17,13 +17,13 @@ default: bin $(SHOW_APP) $(EXAMPLES)
 
 bin:
 	@mkdir -p $(BIN_DIR)
-	@cd $(BIN_DIR) && ln -s ../assets .
+	@cd $(BIN_DIR) && ln -fs ../assets .
 
 clean:
 	@rm -rf $(BIN_DIR)
 
 # SHOW APP
-$(SHOW_APP): show.cpp show.hpp
+$(SHOW_APP): lib/show.cpp lib/show.hpp
 	@$(BUILD_BIN)
 
 # EXAMPLES
