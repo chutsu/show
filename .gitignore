@@ -1,9 +1,14 @@
+bin
+
 deps/assimp
 deps/glad
 deps/glfw
 deps/glm
 deps/imgui
+deps/octomap
 deps/stb
+
+imgui.ini
 
 .DS_Store
 
