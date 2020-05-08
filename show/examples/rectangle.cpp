@@ -14,17 +14,17 @@ bool first_mouse = true;
 
 const char *vertex_shader_src = R"glsl(
 #version 330 core
-layout (location = 0) in vec3 aPos;
+layout (location = 0) in vec3 in_pos;
 void main() {
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+    gl_Position = vec4(in_pos.x, in_pos.y, in_pos.z, 1.0);
 }
 )glsl";
 
 const char *fragment_shader_src = R"glsl(
 #version 330 core
-out vec4 FragColor;
+out vec4 frag_color;
 void main() {
-   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+   frag_color = vec4(1.0f, 0.5f, 0.2f, 1.0f);
 }
 )glsl";
 

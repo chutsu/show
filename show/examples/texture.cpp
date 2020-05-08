@@ -17,34 +17,33 @@ bool first_mouse = true;
 
 const char *vertex_shader_src = R"glsl(
 #version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColor;
-layout (location = 2) in vec2 aTexCoord;
 
-out vec3 ourColor;
-out vec2 TexCoord;
+layout (location = 0) in vec3 in_pos;
+layout (location = 1) in vec3 in_color;
+layout (location = 2) in vec2 in_texture_coord;
 
-void main()
-{
-	gl_Position = vec4(aPos, 1.0);
-	ourColor = aColor;
-	TexCoord = vec2(aTexCoord.x, aTexCoord.y);
+out vec3 vs_color;
+out vec2 vs_texture_coord;
+
+void main() {
+	gl_Position = vec4(in_pos, 1.0);
+	vs_color = in_color;
+	vs_texture_coord = vec2(in_texture_coord.x, in_texture_coord.y);
 }
 )glsl";
 
 const char *fragment_shader_src = R"glsl(
 #version 330 core
-out vec4 FragColor;
 
-in vec3 ourColor;
-in vec2 TexCoord;
+in vec3 vs_color;
+in vec2 vs_texture_coord;
+out vec4 frag_color;
 
 // texture sampler
 uniform sampler2D texture1;
 
-void main()
-{
-	FragColor = texture(texture1, TexCoord);
+void main() {
+	frag_color = texture(texture1, vs_texture_coord);
 }
 )glsl";
 
@@ -218,7 +217,7 @@ int main() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   // -- Load image, create texture and generate mipmaps
   int width, height, nrChannels;
-  unsigned char *data = stbi_load("../assets/textures/container.jpg",
+  unsigned char *data = stbi_load("assets/container.jpg",
                                   &width,
                                   &height,
                                   &nrChannels,
@@ -235,7 +234,8 @@ int main() {
                  data);
     glGenerateMipmap(GL_TEXTURE_2D);
   } else {
-    std::cout << "Failed to load texture" << std::endl;
+    std::cout << "ERROR! Failed to load texture" << std::endl;
+    exit(-1);
   }
   stbi_image_free(data);
 

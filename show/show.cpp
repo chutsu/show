@@ -1799,12 +1799,27 @@ void gui_imshow_t::show(const int img_width,
 
 int main() {
   show::gui_t gui{"Play"};
-  // gui_imshow_t imshow{"Image", "test_data/viz/container.jpg"};
+  // show::gui_imshow_t imshow{"Image", "test_data/viz/container.jpg"};
+  show::glgrid_t grid;
+
+	std::vector<show::glcube_t *> cubes;
+	int j = -10;
+	for (int i = 0; i < 8000; i++) {
+		cubes.push_back(new show::glcube_t(0.1));
+		glm::vec3 p(j + i, 0.0, 0.0);
+		cubes[i]->pos(p);
+	}
 
   while (gui.ok()) {
     gui.poll();
-    // imshow.show();
     gui.clear();
+
+    // imshow.show();
+		grid.draw(gui.camera);
+		for (auto &cube : cubes) {
+			cube->draw(gui.camera);
+		}
+
     gui.render();
   }
 

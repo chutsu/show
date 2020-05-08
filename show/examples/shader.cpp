@@ -7,7 +7,7 @@
 // GLOBAL VARIABLES
 const unsigned int SCREEN_WIDTH = 800;
 const unsigned int SCREEN_HEIGHT = 600;
-const char *TITLE = "Triangle Example";
+const char *TITLE = "Shader Example";
 float dt = 0.0f;
 float frame_last = 0.0f;
 bool first_mouse = true;
@@ -15,24 +15,24 @@ bool first_mouse = true;
 const char *vs_src = R"glsl(
 #version 330 core
 
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColor;
-out vec3 ourColor;
+layout (location = 0) in vec3 in_pos;
+layout (location = 1) in vec3 in_color;
+out vec3 out_color;
 
-void main() {"
-  gl_Position = vec4(aPos, 1.0);
-  ourColor = aColor;
+void main() {
+  gl_Position = vec4(in_pos, 1.0);
+  out_color = in_color;
 }
 )glsl";
 
 const char *fs_src = R"glsl(
 #version 330 core
 
-in vec3 ourColor;
-out vec4 FragColor;
+in vec3 out_color;
+out vec4 frag_color;
 
 void main() {
-  FragColor = vec4(ourColor, 1.0f);
+  frag_color = vec4(out_color, 1.0f);
 };
 )glsl";
 
