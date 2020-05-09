@@ -7,11 +7,13 @@ EXAMPLE-HELLO_WORLD=$(BIN_DIR)/examples-hello_world
 EXAMPLE-RECTANGLE=$(BIN_DIR)/examples-rectangle
 EXAMPLE-SHADER=$(BIN_DIR)/examples-shader
 EXAMPLE-TEXTURE=$(BIN_DIR)/examples-texture
+EXAMPLE-CAMERA=$(BIN_DIR)/examples-camera
 
 EXAMPLES=$(EXAMPLE-HELLO_WORLD) \
 				 $(EXAMPLE-RECTANGLE) \
 				 $(EXAMPLE-SHADER) \
-				 $(EXAMPLE-TEXTURE)
+				 $(EXAMPLE-TEXTURE) \
+				 $(EXAMPLE-CAMERA) \
 
 default: bin $(SHOW_APP) $(EXAMPLES)
 
@@ -37,4 +39,7 @@ $(EXAMPLE-SHADER): examples/shader.cpp
 	@$(BUILD_BIN)
 
 $(EXAMPLE-TEXTURE): examples/texture.cpp
+	@$(BUILD_BIN)
+
+$(EXAMPLE-CAMERA): examples/camera.cpp
 	@$(BUILD_BIN)

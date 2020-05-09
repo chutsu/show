@@ -167,35 +167,31 @@ enum glcamera_movement_t {
   PAN
 };
 
-class glcamera_t {
-public:
-  glm::vec3 world_up = glm::vec3(0.0f, 1.0f, 0.0f);
-
+struct glcamera_t {
   // State
-  glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 world_up = glm::vec3(0.0f, 1.0f, 0.0f);
+  glm::vec3 position = glm::vec3(0.0f, 5.0f, 30.0f);
   glm::vec3 right = glm::vec3(-1.0f, 0.0f, 0.0f);
   glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
   glm::vec3 front = glm::vec3(0.0f, 0.0f, -1.0f);
-  float yaw = -180.0f;
+  float yaw = -M_PI;
   float pitch = 0.0f;
 
   // Settings
   float movement_speed = 50.0f;
   float mouse_sensitivity = 0.05f;
-  float fov = 45.0f;
+  float fov = 1.0472f;
   float near = 0.1f;
   float far = 100.0f;
   int &screen_width;
   int &screen_height;
 
-  glcamera_t(int &screen_width_,
-             int &screen_height_,
-             const glm::vec3 position_ = glm::vec3(0.0f, 5.0f, 30.0f));
+  glcamera_t(int &screen_width_, int &screen_height_);
+	void update();
+	glm::mat4 projection() const;
+	glm::mat4 view() const;
 };
 
-glm::mat4 glcamera_projection(const glcamera_t &camera);
-glm::mat4 glcamera_view_matrix(const glcamera_t &camera);
-void glcamera_update(glcamera_t &camera);
 void glcamera_keyboard_handler(glcamera_t &camera,
                                const glcamera_movement_t &direction,
                                const float dt);
@@ -441,8 +437,7 @@ void main() {
 
 } // namespace shaders
 
-class globj_t {
-public:
+struct globj_t {
   glprog_t program_;
   unsigned int VAO_;
   unsigned int VBO_;
@@ -456,8 +451,7 @@ public:
   glm::mat3 rot();
 };
 
-class glcf_t : public globj_t {
-public:
+struct glcf_t : globj_t {
   float fov_ = glm::radians(60.0f);
   float scale_ = 1.0;
   float line_width_ = 2.0f;
@@ -467,8 +461,7 @@ public:
   void draw(const glcamera_t &camera);
 };
 
-class glcube_t : public globj_t {
-public:
+struct glcube_t : globj_t {
   const float cube_size_ = 0.5;
   glm::vec3 color_{0.9, 0.4, 0.2};
 
@@ -478,8 +471,7 @@ public:
   void draw(const glcamera_t &camera);
 };
 
-class glframe_t : public globj_t {
-public:
+struct glframe_t : globj_t {
   const float line_width_ = 5.0f;
 
   glframe_t();
@@ -487,8 +479,7 @@ public:
   void draw(const glcamera_t &camera);
 };
 
-class glgrid_t : public globj_t {
-public:
+struct glgrid_t : globj_t {
   const int grid_size_ = 10;
 
   glgrid_t();
@@ -496,8 +487,7 @@ public:
   void draw(const glcamera_t &camera);
 };
 
-class glplane_t : public globj_t {
-public:
+struct glplane_t : globj_t {
   std::string image_path_;
   float width_ = 0.5;
   float height_ = 0.5;
@@ -514,8 +504,7 @@ public:
   void draw(const glcamera_t &camera);
 };
 
-class glvoxels_t : public globj_t {
-public:
+struct glvoxels_t : globj_t {
   std::vector<GLfloat> vertices;
 
   glvoxels_t(const float voxel_size, const size_t max_voxels);

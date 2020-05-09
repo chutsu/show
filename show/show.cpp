@@ -473,45 +473,33 @@ void glmesh_draw(const glmesh_t &mesh, const glprog_t &program) {
  *                                 CAMERA
  ***************************************************************************/
 
-glcamera_t::glcamera_t(int &screen_width,
-                       int &screen_height,
-                       const glm::vec3 position)
-    : position{position},
-      screen_width{screen_width},
-      screen_height{screen_height} {
-  glcamera_update(*this);
+glcamera_t::glcamera_t(int &screen_width_, int &screen_height_)
+    : screen_width{screen_width_}, screen_height{screen_height_} {
+  update();
 }
 
-glm::mat4 glcamera_projection(const glcamera_t &camera) {
-  const float fov = glm::radians(camera.fov);
-  const float ratio =
-      (float) camera.screen_width / (float) camera.screen_height;
-  const float near = camera.near;
-  const float far = camera.far;
-  glm::mat4 projection = glm::perspective(fov, ratio, near, far);
-  return projection;
+void glcamera_t::update() {
+	// Calculate the new front vector
+	front.x = sin(yaw) * cos(pitch);
+	front.y = sin(pitch);
+	front.z = cos(yaw) * cos(pitch);
+	front = glm::normalize(front);
+
+	// Also re-calculate the right and Up vector
+	right = glm::normalize(glm::cross(front, world_up));
+
+	// Normalize the vectors, because their length gets closer to 0 the more
+	// you look up or down which results in slower movement.
+	up = glm::normalize(glm::cross(right, front));
 }
 
-glm::mat4 glcamera_view_matrix(const glcamera_t &camera) {
-  return glm::lookAt(camera.position,
-                     camera.position + camera.front,
-                     camera.world_up);
+glm::mat4 glcamera_t::projection() const {
+  const float ratio = (float) screen_width / (float) screen_height;
+  return glm::perspective(fov, ratio, near, far);
 }
 
-void glcamera_update(glcamera_t &camera) {
-  // Calculate the new front vector
-  glm::vec3 front;
-  front.x = sin(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
-  front.y = sin(glm::radians(camera.pitch));
-  front.z = cos(glm::radians(camera.yaw)) * cos(glm::radians(camera.pitch));
-  camera.front = glm::normalize(front);
-
-  // Also re-calculate the right and Up vector
-  camera.right = glm::normalize(glm::cross(camera.front, camera.world_up));
-
-  // Normalize the vectors, because their length gets closer to 0 the more
-  // you look up or down which results in slower movement.
-  camera.up = glm::normalize(glm::cross(camera.right, camera.front));
+glm::mat4 glcamera_t::view() const {
+  return glm::lookAt(position, position + front, world_up);
 }
 
 void glcamera_keyboard_handler(glcamera_t &camera,
@@ -553,7 +541,7 @@ void glcamera_mouse_handler(glcamera_t &camera,
   }
 
   // Update camera attitude
-  glcamera_update(camera);
+  camera.update();
 }
 
 void glcamera_scroll_handler(glcamera_t &camera, const float dy) {
@@ -591,8 +579,8 @@ glmodel_t::glmodel_t(const std::string &path,
 void glmodel_draw(glmodel_t &model, const glcamera_t &camera) {
   // Set projection and view
   model.program.use();
-  model.program.set("projection", glcamera_projection(camera));
-  model.program.set("view", glcamera_view_matrix(camera));
+  model.program.set("projection", camera.projection());
+  model.program.set("view", camera.view());
   model.program.set("model", model.T_SM);
 
   for (unsigned int i = 0; i < model.meshes.size(); i++) {
@@ -927,8 +915,8 @@ glcf_t::~glcf_t() {
 
 void glcf_t::draw(const glcamera_t &camera) {
   program_.use();
-  program_.set("projection", glcamera_projection(camera));
-  program_.set("view", glcamera_view_matrix(camera));
+  program_.set("projection", camera.projection());
+  program_.set("view", camera.view());
   program_.set("model", T_SM_);
 
   // Store original line width
@@ -1046,8 +1034,8 @@ glcube_t::~glcube_t() {
 
 void glcube_t::draw(const glcamera_t &camera) {
   program_.use();
-  program_.set("projection", glcamera_projection(camera));
-  program_.set("view", glcamera_view_matrix(camera));
+  program_.set("projection", camera.projection());
+  program_.set("view", camera.view());
   program_.set("model", T_SM_);
 
   // 12 x 3 indices starting at 0 -> 12 triangles -> 6 squares
@@ -1158,8 +1146,8 @@ glvoxels_t::~glvoxels_t() {}
 
 void glvoxels_t::draw(const glcamera_t &camera) {
   program_.use();
-  program_.set("projection", glcamera_projection(camera));
-  program_.set("view", glcamera_view_matrix(camera));
+  program_.set("projection", camera.projection());
+  program_.set("view", camera.view());
   program_.set("model", T_SM_);
 
   // 12 x 3 indices starting at 0 -> 12 triangles -> 6 squares
@@ -1217,8 +1205,8 @@ glframe_t::~glframe_t() {
 
 void glframe_t::draw(const glcamera_t &camera) {
   program_.use();
-  program_.set("projection", glcamera_projection(camera));
-  program_.set("view", glcamera_view_matrix(camera));
+  program_.set("projection", camera.projection());
+  program_.set("view", camera.view());
   program_.set("model", T_SM_);
 
   // Store original line width
@@ -1322,8 +1310,8 @@ glgrid_t::~glgrid_t() {
 
 void glgrid_t::draw(const glcamera_t &camera) {
   program_.use();
-  program_.set("projection", glcamera_projection(camera));
-  program_.set("view", glcamera_view_matrix(camera));
+  program_.set("projection", camera.projection());
+  program_.set("view", camera.view());
   program_.set("model", T_SM_);
 
   const int nb_lines = (grid_size_ + 1) * 2;
@@ -1438,8 +1426,8 @@ void glplane_t::draw(const glcamera_t &camera) {
   // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   program_.use();
-  // program.set("projection", glcamera_projection(camera));
-  // program.set("view", glcamera_view_matrix(camera));
+  // program.set("projection", camera.projection());
+  // program.set("view", camera.view());
   // program.set("model", T_SM);
 
   glActiveTexture(GL_TEXTURE0);
@@ -1546,17 +1534,13 @@ void gui_t::key_callback(GLFWwindow* window,
 	if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
 		gui->keep_running_ = false;
 	} else if (key == GLFW_KEY_W) {
-		glcamera_movement_t direction = FORWARD;
-		glcamera_keyboard_handler(gui->camera, direction, gui->dt_);
+		glcamera_keyboard_handler(gui->camera, FORWARD, gui->dt_);
 	} else if (key == GLFW_KEY_A && press_or_hold) {
-		glcamera_movement_t direction = LEFT;
-		glcamera_keyboard_handler(gui->camera, direction, gui->dt_);
+		glcamera_keyboard_handler(gui->camera, LEFT, gui->dt_);
 	} else if (key == GLFW_KEY_S && press_or_hold) {
-		glcamera_movement_t direction = BACKWARD;
-		glcamera_keyboard_handler(gui->camera, direction, gui->dt_);
+		glcamera_keyboard_handler(gui->camera, BACKWARD, gui->dt_);
 	} else if (key == GLFW_KEY_D && press_or_hold) {
-		glcamera_movement_t direction = RIGHT;
-		glcamera_keyboard_handler(gui->camera, direction, gui->dt_);
+		glcamera_keyboard_handler(gui->camera, RIGHT, gui->dt_);
 	}
 }
 
@@ -1590,7 +1574,7 @@ void gui_t::mouse_cursor_callback(GLFWwindow *window, double xpos, double ypos) 
 			const float dy = ypos - gui->last_cursor_y;
 			gui->camera.position += gui->camera.up * (dy * 0.1f);
 			gui->camera.position += gui->camera.right * (dx * 0.1f);
-			glcamera_update(gui->camera);
+			gui->camera.update();
 			gui->last_cursor_x = xpos;
 			gui->last_cursor_y = ypos;
 		}
@@ -1798,17 +1782,10 @@ void gui_imshow_t::show(const int img_width,
 } // namespace proto
 
 int main() {
-  show::gui_t gui{"Play"};
+  show::gui_t gui{"Show"};
   // show::gui_imshow_t imshow{"Image", "test_data/viz/container.jpg"};
   show::glgrid_t grid;
-
-	std::vector<show::glcube_t *> cubes;
-	int j = -10;
-	for (int i = 0; i < 8000; i++) {
-		cubes.push_back(new show::glcube_t(0.1));
-		glm::vec3 p(j + i, 0.0, 0.0);
-		cubes[i]->pos(p);
-	}
+	show::glcube_t cube;
 
   while (gui.ok()) {
     gui.poll();
@@ -1816,9 +1793,7 @@ int main() {
 
     // imshow.show();
 		grid.draw(gui.camera);
-		for (auto &cube : cubes) {
-			cube->draw(gui.camera);
-		}
+		cube.draw(gui.camera);
 
     gui.render();
   }

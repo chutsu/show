@@ -7,8 +7,9 @@ GLFW=$(PWD)/glfw
 GLM=$(PWD)/glm
 STB=$(PWD)/stb
 IMGUI=$(PWD)/imgui
+OCTOMAP=$(PWD)/octomap
 
-all: $(LIBGLAD) $(ASSIMP) $(GLFW) $(GLM) $(STB) $(IMGUI)
+all: $(LIBGLAD) $(ASSIMP) $(GLFW) $(GLM) $(STB) $(IMGUI) $(OCTOMAP)
 
 clean:
 	@rm -rf build
@@ -29,15 +30,20 @@ $(LIBGLAD): glad
 $(ASSIMP):
 	@git clone https://github.com/assimp/assimp \
 		&& cd assimp && mkdir build && cd build \
-		&& cmake .. -DCMAKE_BUILD_TYPE=Release
+		&& cmake .. -DCMAKE_BUILD_TYPE=Release \
+		&& make -j2
 
 $(GLFW):
 	@git clone https://github.com/glfw/glfw \
 		&& cd glfw && mkdir build && cd build \
-		&& cmake .. -DCMAKE_BUILD_TYPE=Release -D_GLFW_X11=1
+		&& cmake .. -DCMAKE_BUILD_TYPE=Release -D_GLFW_X11=1 \
+		&& make -j2
 
 $(GLM):
-	@git clone https://github.com/g-truc/glm
+	@git clone https://github.com/g-truc/glm \
+		&& cd glm && mkdir -p build && cd build \
+		&& cmake -DCMAKE_BUILD_TYPE=RELEASE .. \
+		&& make -j2
 
 $(STB):
 	@git clone https://github.com/nothings/stb
@@ -60,3 +66,9 @@ $(IMGUI):
 			imgui_widgets.o \
 			imgui_impl_glfw.o \
 			imgui_impl_opengl3.o
+
+$(OCTOMAP):
+	@git clone https://github.com/OctoMap/octomap \
+		&& cd octomap && mkdir -p build && cd build \
+		&& cmake -DCMAKE_BUILD_TYPE=RELEASE .. \
+		&& make -j2
