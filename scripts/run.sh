@@ -6,5 +6,6 @@ make
 # ./bin/examples-rectangle
 # ./bin/examples-shader
 # ./bin/examples-texture
-./bin/examples-camera
+# ./bin/examples-camera
+./bin/examples-imshow
 # ./bin/show

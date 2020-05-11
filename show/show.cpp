@@ -41,9 +41,9 @@ void print_mat4(const std::string &title, const glm::mat4 &m) {
   printf("%f, %f, %f, %f\n", c1.w, c2.w, c3.w, c4.w);
 }
 
-/****************************************************************************
+/*****************************************************************************
  *                                SHADER
- ***************************************************************************/
+ ****************************************************************************/
 
 int shader_compile(const char *shader_src, const int type) {
   assert(shader_src != nullptr);
@@ -270,9 +270,9 @@ int glprog_t::set(const std::string &key, const glm::mat4 &mat) const {
   return 0;
 }
 
-/****************************************************************************
+/*****************************************************************************
  *                                 TEXTURE
- ***************************************************************************/
+ ****************************************************************************/
 
 unsigned int load_texture(int img_width,
                           int img_height,
@@ -338,9 +338,9 @@ unsigned int load_texture(const std::string &texture_file) {
   return load_texture(texture_file, img_width, img_height, img_channels);
 }
 
-/****************************************************************************
+/*****************************************************************************
  *                                 MESH
- ***************************************************************************/
+ ****************************************************************************/
 
 glmesh_t::glmesh_t(const std::vector<glvertex_t> &vertices_,
                    const std::vector<unsigned int> &indices_,
@@ -469,96 +469,9 @@ void glmesh_draw(const glmesh_t &mesh, const glprog_t &program) {
   glActiveTexture(GL_TEXTURE0);
 }
 
-/****************************************************************************
- *                                 CAMERA
- ***************************************************************************/
-
-glcamera_t::glcamera_t(int &screen_width_, int &screen_height_)
-    : screen_width{screen_width_}, screen_height{screen_height_} {
-  update();
-}
-
-void glcamera_t::update() {
-	// Calculate the new front vector
-	front.x = sin(yaw) * cos(pitch);
-	front.y = sin(pitch);
-	front.z = cos(yaw) * cos(pitch);
-	front = glm::normalize(front);
-
-	// Also re-calculate the right and Up vector
-	right = glm::normalize(glm::cross(front, world_up));
-
-	// Normalize the vectors, because their length gets closer to 0 the more
-	// you look up or down which results in slower movement.
-	up = glm::normalize(glm::cross(right, front));
-}
-
-glm::mat4 glcamera_t::projection() const {
-  const float ratio = (float) screen_width / (float) screen_height;
-  return glm::perspective(fov, ratio, near, far);
-}
-
-glm::mat4 glcamera_t::view() const {
-  return glm::lookAt(position, position + front, world_up);
-}
-
-void glcamera_keyboard_handler(glcamera_t &camera,
-                               const glcamera_movement_t &direction,
-                               const float dt) {
-  float velocity = camera.movement_speed * dt;
-  if (direction == FORWARD) {
-    camera.position += camera.front * velocity;
-  }
-  if (direction == BACKWARD) {
-    camera.position -= camera.front * velocity;
-  }
-  if (direction == LEFT) {
-    camera.position -= camera.right * velocity;
-  }
-  if (direction == RIGHT) {
-    camera.position += camera.right * velocity;
-  }
-  if (direction == UP) {
-    camera.position += camera.up * velocity;
-  }
-  if (direction == DOWN) {
-    camera.position -= camera.up * velocity;
-  }
-}
-
-void glcamera_mouse_handler(glcamera_t &camera,
-                            const float dx,
-                            const float dy) {
-  camera.yaw += dx * camera.mouse_sensitivity;
-  camera.pitch += dy * camera.mouse_sensitivity;
-
-  // Constrain pitch
-  if (camera.pitch > 89.0f) {
-    camera.pitch = 89.0f;
-  }
-  if (camera.pitch < -89.0f) {
-    camera.pitch = -89.0f;
-  }
-
-  // Update camera attitude
-  camera.update();
-}
-
-void glcamera_scroll_handler(glcamera_t &camera, const float dy) {
-  if (camera.fov >= 1.0f && camera.fov <= 45.0f) {
-    camera.fov -= dy;
-  }
-  if (camera.fov <= 1.0f) {
-    camera.fov = 1.0f;
-  }
-  if (camera.fov >= 45.0f) {
-    camera.fov = 45.0f;
-  }
-}
-
-/****************************************************************************
+/*****************************************************************************
  *                                MODEL
- ***************************************************************************/
+ ****************************************************************************/
 
 glmodel_t::glmodel_t(const std::string &path,
                      const std::string &vs,
@@ -833,9 +746,9 @@ unsigned int texture_from_file(const std::string &dir,
   return texture_id;
 }
 
-/****************************************************************************
+/*****************************************************************************
  *                                DRAW
- ***************************************************************************/
+ ****************************************************************************/
 
 globj_t::globj_t(const char *vs, const char *fs) : program_{vs, fs} {}
 
@@ -1439,18 +1352,14 @@ void glplane_t::draw(const glcamera_t &camera) {
   // glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-/****************************************************************************
- *                                GUI
- ***************************************************************************/
+/*****************************************************************************
+ *                                   GUI
+ ****************************************************************************/
 
-// static void glfw_scroll_cb(GLFWwindow *window, double xoffset, double
-// yoffset) {
-//   glcamera_scroll_handler(camera, yoffset);
-// }
 
-gui_t::gui_t(const std::string &title, const int width, const int height)
-    : title_{title}, width_{width}, height_{height} {
-  // Setup window
+gui_t::gui_t(const std::string &title_, const int width_, const int height_)
+    : title{title_}, width{width_}, height{height_} {
+  // Set GLFW error callback
   glfwSetErrorCallback(error_callback);
   if (!glfwInit()) {
     FATAL("Failed to initialize GLFW!");
@@ -1460,30 +1369,27 @@ gui_t::gui_t(const std::string &title, const int width, const int height)
   // GL 3.0 + GLSL 130
   const char *glsl_version = "#version 130";
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-  // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+
-  // only glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 3.0+ only
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   // Create window with graphics context
-  gui_ = glfwCreateWindow(width_, height_, title_.c_str(), NULL, NULL);
-  if (gui_ == NULL) {
+  gui = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+  if (gui == NULL) {
     FATAL("Failed to create a GLFW window!");
   }
-  glfwSetWindowAspectRatio(gui_, width_, height_);
-  glfwMakeContextCurrent(gui_);
+  glfwMakeContextCurrent(gui);
+  glfwSetWindowAspectRatio(gui, width, height);
   glfwSwapInterval(1); // Enable vsync
 
   // Event handlers
 	glfwWaitEventsTimeout(0.1);
-  glfwSetWindowUserPointer(gui_, this);
-  // -- Keyboard
-  // glfwSetKeyCallback(gui_, key_callback);
+  glfwSetWindowUserPointer(gui, this);
   // -- Mouse
-  glfwSetCursorPosCallback(gui_, mouse_cursor_callback);
-	glfwSetMouseButtonCallback(gui_, mouse_button_callback);
-  glfwSetScrollCallback(gui_, mouse_scroll_callback);
+  glfwSetCursorPosCallback(gui, mouse_cursor_cb);
+	glfwSetMouseButtonCallback(gui, mouse_button_cb);
+  glfwSetScrollCallback(gui, mouse_scroll_cb);
   // -- Window
-  glfwSetFramebufferSizeCallback(gui_, window_callback);
+  glfwSetFramebufferSizeCallback(gui, window_cb);
 
   // Initialize OpenGL loader
   bool err = gladLoadGL() == 0;
@@ -1501,7 +1407,7 @@ gui_t::gui_t(const std::string &title, const int width, const int height)
   // ImGui::StyleColorsClassic();
 
   // Setup Platform/Renderer bindings
-  ImGui_ImplGlfw_InitForOpenGL(gui_, true);
+  ImGui_ImplGlfw_InitForOpenGL(gui, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
 }
 
@@ -1513,118 +1419,16 @@ gui_t::~gui_t() {
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
 
-  glfwDestroyWindow(gui_);
+  glfwDestroyWindow(gui);
   glfwTerminate();
-}
-
-void gui_t::error_callback(int error, const char *description) {
-  fprintf(stderr, "GLFW Error %d: %s\n", error, description);
-}
-
-void gui_t::key_callback(GLFWwindow* window,
-												 int key,
-												 int scancode,
-												 int action,
-												 int mods) {
-	UNUSED(scancode);
-	UNUSED(mods);
-	gui_t *gui = reinterpret_cast<gui_t *>(glfwGetWindowUserPointer(window));
-	const auto press_or_hold = (action == GLFW_PRESS || action == GLFW_REPEAT);
-
-	if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
-		gui->keep_running_ = false;
-	} else if (key == GLFW_KEY_W) {
-		glcamera_keyboard_handler(gui->camera, FORWARD, gui->dt_);
-	} else if (key == GLFW_KEY_A && press_or_hold) {
-		glcamera_keyboard_handler(gui->camera, LEFT, gui->dt_);
-	} else if (key == GLFW_KEY_S && press_or_hold) {
-		glcamera_keyboard_handler(gui->camera, BACKWARD, gui->dt_);
-	} else if (key == GLFW_KEY_D && press_or_hold) {
-		glcamera_keyboard_handler(gui->camera, RIGHT, gui->dt_);
-	}
-}
-
-void gui_t::mouse_cursor_callback(GLFWwindow *window, double xpos, double ypos) {
-  UNUSED(window);
-	gui_t *gui = reinterpret_cast<gui_t *>(glfwGetWindowUserPointer(window));
-
-
-	if (gui->left_click) {
-		// Rotate camera
-		if ( gui->last_cursor_set == false) {
-			gui->last_cursor_set = true;
-			gui->last_cursor_x = xpos;
-			gui->last_cursor_y = ypos;
-		} else if (gui->last_cursor_set) {
-			const double dx = xpos - gui->last_cursor_x;
-			const double dy = ypos - gui->last_cursor_y;
-			glcamera_mouse_handler(gui->camera, dx, dy);
-			gui->last_cursor_x = xpos;
-			gui->last_cursor_y = ypos;
-		}
-
-	} else if (gui->right_click) {
-		// Move camera
-		if (gui->last_cursor_set == false) {
-			gui->last_cursor_set = true;
-			gui->last_cursor_x = xpos;
-			gui->last_cursor_y = ypos;
-		} else if (gui->last_cursor_set) {
-			const float dx = gui->last_cursor_x - xpos;
-			const float dy = ypos - gui->last_cursor_y;
-			gui->camera.position += gui->camera.up * (dy * 0.1f);
-			gui->camera.position += gui->camera.right * (dx * 0.1f);
-			gui->camera.update();
-			gui->last_cursor_x = xpos;
-			gui->last_cursor_y = ypos;
-		}
-	}
-
-	if (gui->left_click == false && gui->right_click == false) {
-		gui->last_cursor_set = false;
-		gui->last_cursor_x = 0.0;
-		gui->last_cursor_y = 0.0;
-	}
-}
-
-void gui_t::mouse_button_callback(GLFWwindow *window,
-																	int button,
-																	int action,
-																	int mods) {
-  UNUSED(window);
-  UNUSED(mods);
-	gui_t *gui = reinterpret_cast<gui_t *>(glfwGetWindowUserPointer(window));
-
-	if (button == GLFW_MOUSE_BUTTON_LEFT) {
-		gui->left_click = (action == GLFW_PRESS) ? true : false;
-	}
-	if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-		gui->right_click = (action == GLFW_PRESS) ? true : false;
-	}
-}
-
-void gui_t::mouse_scroll_callback(GLFWwindow * window,
-																  double xoffset,
-																  double yoffset) {
-	UNUSED(window);
-	UNUSED(xoffset);
-	gui_t *gui = reinterpret_cast<gui_t *>(glfwGetWindowUserPointer(window));
-	glcamera_scroll_handler(gui->camera, yoffset);
-}
-
-void gui_t::window_callback(GLFWwindow *window,
-                            const int width,
-                            const int height) {
-  UNUSED(window);
-  glViewport(0, 0, width, height);
 }
 
 bool gui_t::ok() {
   float time_now = glfwGetTime();
-  dt_ = time_now - time_last_;
-  time_last_ = time_now;
+  dt = time_now - time_last;
+  time_last = time_now;
 
-	return !glfwWindowShouldClose(gui_) && keep_running_;
+	return !glfwWindowShouldClose(gui) && keep_running;
 }
 
 void gui_t::poll() {
@@ -1633,11 +1437,12 @@ void gui_t::poll() {
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
 
-  glfwGetWindowSize(gui_, &width_, &height_);
+  glfwGetWindowSize(gui, &width, &height);
+  keyboard_cb(gui);
 }
 
 void gui_t::clear() {
-  glClearColor(clear_color_.x, clear_color_.y, clear_color_.z, clear_color_.w);
+  glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -1650,8 +1455,94 @@ void gui_t::render(const bool clear_gui) {
 
   // glfwMakeContextCurrent(gui_);
 	glEnable(GL_CULL_FACE);
-  glfwSwapBuffers(gui_);
+  glfwSwapBuffers(gui);
 }
+
+void gui_t::loop(std::function<int()> cb) {
+  while (ok()) {
+    poll();
+    clear();
+
+    if (cb() != 0) {
+      keep_running = false;
+    }
+
+    render();
+  }
+}
+
+void gui_t::error_callback(int error, const char *description) {
+  fprintf(stderr, "GLFW Error %d: %s\n", error, description);
+}
+
+void gui_t::window_cb(GLFWwindow *window, int width, int height) {
+  glViewport(0, 0, width, height);
+}
+
+void gui_t::mouse_cursor_cb(GLFWwindow *window, double x, double y) {
+  gui_t *gui = reinterpret_cast<gui_t *>(glfwGetWindowUserPointer(window));
+	const float dx = x - gui->last_cursor_x;
+	const float dy = y - gui->last_cursor_y;
+	gui->last_cursor_x = x;
+	gui->last_cursor_y = y;
+
+	// Rotate camera
+  if (gui->left_click) {
+    if (gui->last_cursor_set == false) {
+      gui->last_cursor_set = true;
+    } else if (gui->last_cursor_set) {
+      gui->camera.rotate(dx, dy);
+    }
+  }
+
+	// Pan camera
+	if (gui->right_click) {
+    if (gui->last_cursor_set == false) {
+      gui->last_cursor_set = true;
+    } else if (gui->last_cursor_set) {
+      gui->camera.pan(dx, dy);
+    }
+  }
+
+	// Reset cursor
+  if (gui->left_click == false && gui->right_click == false) {
+    gui->last_cursor_set = false;
+    gui->last_cursor_x = 0.0;
+    gui->last_cursor_y = 0.0;
+  }
+}
+
+void gui_t::mouse_button_cb(GLFWwindow *window,
+                            int btn,
+                            int action,
+                            int mods) {
+  gui_t *gui = reinterpret_cast<gui_t *>(glfwGetWindowUserPointer(window));
+  if (btn == GLFW_MOUSE_BUTTON_LEFT) {
+    gui->left_click = (action == GLFW_PRESS) ? true : false;
+  } else if (btn == GLFW_MOUSE_BUTTON_RIGHT) {
+    gui->right_click = (action == GLFW_PRESS) ? true : false;
+  }
+}
+
+void gui_t::mouse_scroll_cb(GLFWwindow *window, double dx, double dy) {
+  gui_t *gui = reinterpret_cast<gui_t *>(glfwGetWindowUserPointer(window));
+  gui->camera.zoom(dy);
+}
+
+void gui_t::keyboard_cb(GLFWwindow *window) {
+  gui_t *gui = reinterpret_cast<gui_t *>(glfwGetWindowUserPointer(window));
+
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    glfwSetWindowShouldClose(window, true);
+  }
+  if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+    glfwSetWindowShouldClose(window, true);
+  }
+}
+
+/*****************************************************************************
+ *                               GUI IMSHOW
+ ****************************************************************************/
 
 gui_imshow_t::gui_imshow_t(const std::string &title) : title_{title} {}
 
@@ -1783,20 +1674,14 @@ void gui_imshow_t::show(const int img_width,
 
 int main() {
   show::gui_t gui{"Show"};
-  // show::gui_imshow_t imshow{"Image", "test_data/viz/container.jpg"};
   show::glgrid_t grid;
 	show::glcube_t cube;
 
-  while (gui.ok()) {
-    gui.poll();
-    gui.clear();
-
-    // imshow.show();
+  gui.loop([&]() {
 		grid.draw(gui.camera);
 		cube.draw(gui.camera);
-
-    gui.render();
-  }
+    return 0;
+	});
 
 	return 0;
 }

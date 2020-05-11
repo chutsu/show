@@ -6,6 +6,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <imgui/imgui.h>
+#include <imgui/examples/imgui_impl_glfw.h>
+#include <imgui/examples/imgui_impl_opengl3.h>
+
+#include <stb/stb_image.h>
+
+#ifndef STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#endif // STB_IMAGE_IMPLEMENTATION
+
 // GLOBAL VARIABLES
 bool keep_running = true;
 int SCREEN_WIDTH = 1024;
@@ -482,12 +493,203 @@ struct gui_t {
 };
 
 /*****************************************************************************
+ *                               GUI IMSHOW
+ ****************************************************************************/
+
+unsigned int load_texture(int img_width,
+                          int img_height,
+                          int img_channels,
+                          const unsigned char *data) {
+  // printf("img_width: %d\n", img_width);
+  // printf("img_height: %d\n", img_height);
+  // printf("img_channels: %d\n", img_channels);
+
+  unsigned int texture_id;
+  glGenTextures(1, &texture_id);
+
+  GLenum format;
+  switch (img_channels) {
+  case 1: format = GL_RED; break;
+  case 3: format = GL_RGB; break;
+  case 4: format = GL_RGBA; break;
+  }
+
+  glBindTexture(GL_TEXTURE_2D, texture_id);
+  glTexImage2D(GL_TEXTURE_2D,
+               0,
+               format,
+               img_width,
+               img_height,
+               0,
+               format,
+               GL_UNSIGNED_BYTE,
+               data);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D,
+                  GL_TEXTURE_MIN_FILTER,
+                  GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  return texture_id;
+}
+
+class gui_imshow_t {
+public:
+  bool ok = false;
+
+  std::string title;
+  GLuint FBO;
+  GLuint RBO;
+
+  std::string img_path;
+  int img_width = 0;
+  int img_height = 0;
+  int img_channels = 0;
+  GLuint img_id;
+
+  gui_imshow_t(const std::string &title_) : title{title_} {}
+
+  gui_imshow_t(const std::string &title_, const std::string &img_path_)
+      : title{title_}, img_path{img_path_} {
+    unsigned char *data =
+        stbi_load(img_path.c_str(), &img_width, &img_height, &img_channels, 0);
+    if (!data) {
+      printf("Failed to load texture at path [%s]!\n", img_path.c_str());
+    }
+    init(title, img_width, img_height, img_channels, data);
+    stbi_image_free(data);
+  }
+
+  gui_imshow_t(const std::string &title,
+               const int img_width,
+               const int img_height,
+               const int img_channels,
+               const unsigned char *data) {
+    init(title, img_width, img_height, img_channels, data);
+  }
+
+  void init(const std::string &title_,
+            const int img_width_,
+            const int img_height_,
+            const int img_channels_,
+            const unsigned char *data_) {
+    title = title_;
+    img_width = img_width_;
+    img_height = img_height_;
+    img_channels = img_channels_;
+
+    // FBO
+    glGenFramebuffers(1, &FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+    // Load and create a texture
+    img_id = load_texture(img_width, img_height, img_channels, data_);
+    glFramebufferTexture2D(GL_FRAMEBUFFER,
+                          GL_COLOR_ATTACHMENT0,
+                          GL_TEXTURE_2D,
+                          img_id,
+                          0);
+
+    // Render buffer
+    glGenRenderbuffers(1, &RBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER,
+                          GL_DEPTH24_STENCIL8,
+                          img_width,
+                          img_height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+                              GL_DEPTH_STENCIL_ATTACHMENT,
+                              GL_RENDERBUFFER,
+                              RBO);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+      printf("Framebuffer is not complete!\n");
+    }
+
+    // Clean up
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbind FBO
+    ok = true;
+  }
+
+  void update(void *pixels) {
+    GLenum img_format;
+    switch (img_channels) {
+    case 1: img_format = GL_RED; break;
+    case 3: img_format = GL_RGB; break;
+    case 4: img_format = GL_RGBA; break;
+    }
+
+    glBindTexture(GL_TEXTURE_2D, img_id);
+    glTexSubImage2D(GL_TEXTURE_2D,
+                    0,
+                    0,
+                    0,
+                    img_width,
+                    img_height,
+                    img_format,
+                    GL_UNSIGNED_BYTE,
+                    pixels);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
+
+  void show() {
+    // Set window alpha
+    float alpha = 2.0f;
+    ImGui::SetNextWindowBgAlpha(alpha);
+
+    // Set window size
+    ImVec2 win_size(img_width + 15, img_height + 35);
+    ImGui::SetNextWindowSize(win_size);
+
+    // Begin window
+    bool open = false;
+    const ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize;
+    ImGui::Begin(title.c_str(), &open, flags);
+    // ImGui::Begin(title.c_str(), &open);
+
+    // Add image
+    const auto start = ImGui::GetCursorScreenPos();
+    const auto end_x = start.x + img_width;
+    const auto end_y = start.y + img_height;
+    const auto end = ImVec2(end_x, end_y);
+    ImGui::GetWindowDrawList()->AddImage((void *) (intptr_t) img_id,
+                                        ImVec2(start.x, start.y),
+                                        end);
+
+    // End window
+    ImGui::End();
+  }
+
+  void show(const int img_width,
+            const int img_height,
+            const int img_channels,
+            const unsigned char *data) {
+    if (ok == false) {
+      init(title, img_width, img_height, img_channels, data);
+    }
+
+    update((void *) data);
+    show();
+  }
+};
+
+/*****************************************************************************
  *                                MAIN
  ****************************************************************************/
 
 int main(void) {
   gui_t gui{TITLE, SCREEN_WIDTH, SCREEN_HEIGHT};
-  cube_t cube;
+  gui_imshow_t imshow{"Image", "./assets/container.jpg"};
+
+  // Setup Dear ImGui context
+  const char *glsl_version = "#version 130";
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGui::StyleColorsDark();
+  ImGui_ImplGlfw_InitForOpenGL(gui.window, true);
+  ImGui_ImplOpenGL3_Init(glsl_version);
 
   // Loop until the user closes the window
   while (!glfwWindowShouldClose(gui.window) && keep_running) {
@@ -505,8 +707,12 @@ int main(void) {
     gui_t::keyboard_cb(gui.window);
 
     // Draw
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  // Wireframe mode
-    cube.draw(gui.camera);
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    imshow.show();
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // Swap buffers and poll IO events (keyboard, mouse, etc)
     glEnable(GL_CULL_FACE);
@@ -514,6 +720,10 @@ int main(void) {
   }
 
   // Clean up
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
   glfwTerminate();
+
   return 0;
 }
