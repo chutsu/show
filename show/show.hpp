@@ -181,7 +181,7 @@ struct glcamera_t {
   // Settings
   float movement_speed = 50.0f;
   float mouse_sensitivity = 0.05f;
-  float fov = 1.0472f;
+  float fov = M_PI / 3.0f;
   float near = 0.1f;
   float far = 100.0f;
   int &screen_width;

@@ -7,5 +7,5 @@ make
 # ./bin/examples-shader
 # ./bin/examples-texture
 # ./bin/examples-camera
-./bin/examples-imshow
+# ./bin/examples-imshow
 # ./bin/show
